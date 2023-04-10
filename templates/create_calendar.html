@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calendar</title>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+
+    <script src="https://www.gstatic.com/firebasejs/ui/4.4.0/firebase-ui-auth.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/4.4.0/firebase-ui-auth.css" />
+</head>
+
+<body>
+    <h1>Create Calendar</h1>
+
+    <div id="firebase-auth-container"></div>
+    <button id="sign-out" hidden="true">Sign out</button>
+    <div id="login-info" hidden="true">
+        <h2>Login Info</h2>
+
+
+
+
+        <!-- Create Calendar form -->
+        <form action="/create_calendar" method="post">
+            <input type="text" name="calendar_name" id="calendar_nmame">
+            <label for="calendar_name">Whats the name of your calendar?</label>
+        </form>
+
+
+
+
+
+
+
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.8.0/firebase-auth.js"></script>
+    <script type="module" src="{{ url_for('static', filename='app-setup.js') }}"></script>
+</body>
+
+</html>

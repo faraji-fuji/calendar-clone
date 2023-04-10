@@ -20,18 +20,76 @@
     <button id="sign-out" hidden="true">Sign out</button>
     <div id="login-info" hidden="true">
         <h2>Login Info</h2>
-        {% if user_data %}
+        {% if claims %}
         <dl>
             <dt>Name:</dt>
-            <dd>{{ user_data['name'] }}</dd>
+            <dd>{{ claims['name'] }}</dd>
             <dt>Email:</dt>
-            <dd>{{ user_data['email'] }}</dd>
+            <dd>{{ claims['email'] }}</dd>
         </dl>
+
+
+
+
+        <!-- Create Calendar form -->
+        <form action="/create_calendar" method="post">
+            <label for="calendar_name">Whats the name of your calendar?</label>
+            <input type="text" name="calendar_name" id="calendar_nmame">
+            <br>
+
+            <button type="submit">Create Calendar</button>
+        </form>
+
+
+        <!-- Create Event form -->
+        <form action="/create_event" method="post">
+
+            <label for="event_nmame">Name of event:</label>
+            <input type="text" name="event_name" id="event_nmame">
+            <br>
+
+            <label for="start_time">Start Time:</label>
+            <input type="datetime" name="start_time" id="start_time">
+            <br>
+
+            <label for="end_time">End time:</label>
+            <input type="datetime" name="end_time" id="end_time">
+            <br>
+
+            <label for="event_notes">Notes</label>
+            <input type="text" name="event_notes" id="event_notes">
+            <br>
+
+            <!-- <input type="text" name="calendar_name" id="calendar_nmame">
+            <label for="calendar_name">Whats the name of your calendar?</label> -->
+            <button type="submit"> Create Event</button>
+        </form>
+
+
         {% elif error_message %}
         <p>Error Message: {{ error_message }}</p>
         {% endif %}
 
+
+        <h2>User Info</h2>
+        {% if user_data %}
+
+        <p>{{user_data['name'] }}</p>
+        <p>{{user_data['email'] }}</p>
+        <p>{{user_data['calendars'] }}</p>
+        <p>{{user_data['shared_calendars'] }}</p>
+
+        {% endif %}
+
     </div>
+
+
+
+
+
+    <!-- <div>
+        <a href="/create_calendar"> Click here to create a calendar</a>
+    </div> -->
 
     <script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.8.0/firebase-auth.js"></script>
