@@ -2,7 +2,7 @@ from google.cloud import datastore
 from google.auth.transport import requests
 import google.oauth2.id_token
 import random
-
+from pprint import pprint
 
 class MyCalendar:
     def __init__(self):
@@ -33,18 +33,14 @@ class MyCalendar:
 
         :param user_data: A User entity. Where we need to add the ID.
         :param id: The ID of the new calendar.
-        :return: True on success, otherwise False.
         '''
-        try:
-            calendar_keys = user_data['calendar_ids']
-            calendar_keys.append(id)
-            user_data.update({
-                'calendar_ids': calendar_keys
-            })
-            self.datastore_client.put(user_data)
-        except:
-            return False
-        return True
+
+        calendar_keys = user_data['calendar_ids']
+        calendar_keys.append(id)
+        user_data.update({
+            'calendar_ids': calendar_keys
+        })
+        self.datastore_client.put(user_data)
 
     def get_calendars_from_user(self, user_data):
         '''
@@ -78,3 +74,17 @@ class MyCalendar:
         shared_calendar_list = self.datastore_client.get_multi(
             shared_calendar_keys)
         return shared_calendar_list
+    
+    def update_calendar(self, calendar, id):
+        '''
+        Update a calendar entity.
+
+        :param calendar: The calendar entity to update.
+        :param id: The ID of the event to be added to the event list
+        '''
+        event_ids = calendar['event_ids']
+        event_ids.append(id)
+        calendar.update({
+            'event_ids': event_ids
+        })
+        self.datastore_client.put(calendar)

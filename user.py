@@ -16,19 +16,30 @@ class User:
         :param claims: An object returned after firebase token verification
         :return: On success, True, otherwise False.
         '''
-        try:
-            entity_key = self.datastore_client.key('User', claims['email'])
+        entity_key = self.datastore_client.key('UserData', claims['email'])
+        entity = datastore.Entity(key=entity_key)
+        entity.update({
+            'email': claims['email'],
+            # 'name': claims['name'],
+            'calendar_ids': [],
+            'shared_calendar_ids': []
+        })
+        self.datastore_client.put(entity)
+
+
+    def update_username(self, claims):
+            '''
+            Workaround to update username. Firebase seems not to return the 
+            name on first verificatio. We'll need to update manually. 
+
+            :param claims: An object returned after firebase token verification
+            '''
+            entity_key = self.datastore_client.key('UserData', claims['email'])
             entity = datastore.Entity(key=entity_key)
             entity.update({
-                'email': claims['email'],
-                'name': claims['name'],
-                'calendar_ids': [],
-                'shared_calendar_ids': []
+                'name': claims['name']
             })
             self.datastore_client.put(entity)
-        except:
-            return False
-        return True
 
     def get_user(self, claims):
         '''
@@ -37,6 +48,6 @@ class User:
         :param claims: An object returned after firebase token verification.
         :return: A user entity containing user data of the logged in user.
         '''
-        entity_key = self.datastore_client.key('User', claims['email'])
+        entity_key = self.datastore_client.key('UserData', claims['email'])
         entity = self.datastore_client.get(entity_key)
         return entity

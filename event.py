@@ -2,6 +2,7 @@ from google.cloud import datastore
 from google.auth.transport import requests
 import google.oauth2.id_token
 import random
+from pprint import pprint
 
 
 class Event:
@@ -17,21 +18,18 @@ class Event:
         :param start_time: Start time of the event.
         :param end_time: The end time of the event.
         :param notes: Notes about the event.
-        :return: True on success, otherwise False.
+        :return: ID of the created event.
         '''
-        try:
-            id = random.getrandbits(63)
-            entity_key = self.datastore_client.key('Event', id)
-            entity = datastore.Entity(key=entity_key)
-            entity.update({
-                'name': name,
-                'start_time': start_time,
-                'end_time': end_time,
-                'notes': notes
-            })
-            self.datastore_client.put(entity)
-        except:
-            return False
+        id = random.getrandbits(63)
+        entity_key = self.datastore_client.key('Event', id)
+        entity = datastore.Entity(key=entity_key)
+        entity.update({
+            'name': name,
+            'start_time': start_time,
+            'end_time': end_time,
+            'notes': notes
+        })
+        self.datastore_client.put(entity)
         return id
 
     def add_event_to_calendar(self, calendar, id):
@@ -40,15 +38,14 @@ class Event:
 
         :param calendar: Calendar entity to add the event to.
         :param id: The ID of the event.
-        :return: True on success, otherwise False.
         '''
-        try:
-            event_ids = calendar['event_ids']
-            event_ids.append(id)
-            calendar.update({
-                'event_ids': event_ids
-            })
-            self.datastore_client.put(event_ids)
-        except:
-            return False
-        return True
+
+        event_ids = calendar['event_ids']
+        event_ids.append(id)
+        calendar.update({
+            'event_ids': event_ids
+        })
+        self.datastore_client.put(event_ids)
+
+
+
