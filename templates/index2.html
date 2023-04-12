@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calendar</title>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+
+    <script src="https://www.gstatic.com/firebasejs/ui/4.4.0/firebase-ui-auth.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/4.4.0/firebase-ui-auth.css" />
+</head>
+
+<body>
+    <h1>Calendar</h1>
+
+    <div id="firebase-auth-container"></div>
+    <button id="sign-out" hidden="true">Sign out</button>
+    <div id="login-info" hidden="true">
+        {% if claims %}
+        <h2>Login Info according to claims</h2>
+
+        <dl>
+            <dt>Name:</dt>
+            <dd>{{ claims['name'] }}</dd>
+            <dt>Email:</dt>
+            <dd>{{ claims['email'] }}</dd>
+        </dl>
+
+        {% elif error_message %}
+        <p>Error Message: {{ error_message }}</p>
+        {% endif %}
+
+
+
+        {% if user_data %}
+        <h2>user_profile</h2>
+        <p>user name: {{user_data['name'] }}</p>
+        <p>email address: {{user_data['email'] }}</p>
+        <p>your calendars: {{user_data['calendar_ids'] }}</p>
+        <p>your shared calendars: {{user_data['shared_calendar_ids'] }}</p>
+
+        <!-- Create Calendar form -->
+        <form action="/create_calendar" method="post">
+            <label for="calendar_name">Whats the name of your calendar?</label>
+            <input type="text" name="calendar_name" id="calendar_nmame">
+            <br>
+
+            <button type="submit">Create Calendar</button>
+        </form>
+
+
+        <!-- Create Event form -->
+        <form action="/create_event" method="post">
+
+            <label for="event_nmame">Name of event:</label>
+            <input type="text" name="event_name" id="event_nmame">
+            <br>
+
+            <label for="start_time">Start Time:</label>
+            <input type="datetime-local" name="start_time" id="start_time">
+            <br>
+
+            <label for="end_time">End time:</label>
+            <input type="datetime-local" name="end_time" id="end_time">
+            <br>
+
+            <label for="event_notes">Notes</label>
+            <input type="text" name="event_notes" id="event_notes">
+            <br>
+
+            <label for="calendar_name">Name of calendar</label>
+            <input type="text" name="calendar_name" id="calendar_name" value="personal">
+            <br>
+
+            <!-- <input type="text" name="calendar_name" id="calendar_nmame">
+            <label for="calendar_name">Whats the name of your calendar?</label> -->
+            <button type="submit"> Create Event</button>
+        </form>
+
+        {% endif %}
+
+
+        {% if calendars %}
+
+        <h2>Personal Calendar</h2>
+        <p>Name {{ calendars[0]['name']}}</p>
+        <p>Events {{ calendars[0]['event_ids']}}</p>
+        {% endif%}
+
+
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.8.0/firebase-auth.js"></script>
+    <script type="module" src="{{ url_for('static', filename='app-setup.js') }}"></script>
+</body>
+
+</html>

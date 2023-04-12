@@ -15,6 +15,7 @@ window.addEventListener("load", function () {
       if (user) {
         document.getElementById("sign-out").hidden = false;
         document.getElementById("login-info").hidden = false;
+        document.getElementById("main-content").hidden = false;
         console.log("Signed in as ${user.displayName} (${user.email})");
         user.getIdToken().then(function (token) {
           document.cookie = "token=" + token;
@@ -24,6 +25,8 @@ window.addEventListener("load", function () {
         ui.start("#firebase-auth-container", uiConfig);
         document.getElementById("sign-out").hidden = true;
         document.getElementById("login-info").hidden = true;
+        document.getElementById("main-content").hidden = true;
+
         document.cookie = "token=";
       }
     },

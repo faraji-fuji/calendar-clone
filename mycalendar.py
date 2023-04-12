@@ -58,6 +58,9 @@ class MyCalendar:
         calendar_list = self.datastore_client.get_multi(calendar_keys)
         return calendar_list
 
+    def get_calendar_entity():
+        pass
+
     def get_shared_calendars(self, user_data):
         '''
         Get a list of shared calendars.
@@ -88,3 +91,17 @@ class MyCalendar:
             'event_ids': event_ids
         })
         self.datastore_client.put(calendar)
+
+    def delete_event_id(self, calendar_entity, event_id):
+        '''
+        Delete event id from calendar['event_ids'] list.
+ 
+        :param calendar_ntity: The calendar entity to delete from.
+        :param event_id: The ID of the event to be removed to the event list
+        '''
+        event_ids = calendar_entity['event_ids']
+        event_ids.remove(event_id)
+        calendar_entity.update({
+            'event_ids': event_ids
+        })
+        self.datastore_client.put(calendar_entity)
