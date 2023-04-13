@@ -59,9 +59,6 @@ class Event:
         })
         self.datastore_client.put(event_entity)
 
-        
-
-
     def add_event_to_calendar(self, calendar, id):
         '''
         Attach the ID of an event to a calendar
@@ -69,7 +66,6 @@ class Event:
         :param calendar: Calendar entity to add the event to.
         :param id: The ID of the event.
         '''
-
         event_ids = calendar['event_ids']
         event_ids.append(id)
         calendar.update({
@@ -77,9 +73,22 @@ class Event:
         })
         self.datastore_client.put(event_ids)
 
-    def get_personal_events(self, event_ids):
+    def get_event_ids(self, calendar_id):
         '''
-        Get a list of events from the personal calendar.
+        Fetch a list of event ids.
+
+        :param calendar_id: The ID of the calendar to fetch the events from.
+        :return: A list of event ids from a calendar
+        '''
+        event_ids = []
+        calendar_entity_key = self.datastore_client.key('Calendar', calendar_id)
+        calendar_entity = self.datastore_client.get(calendar_entity_key)
+        event_ids = calendar_entity['event_ids']
+        return event_ids
+
+    def get_events(self, event_ids):
+        '''
+        Get a list of events.
 
         :param event_ids: A list of event ids from the personal calendar.
         :return: A list of events from the personal calendar. 
@@ -89,10 +98,6 @@ class Event:
             event_keys.append(self.datastore_client.key('Event', event_ids[i]))
         events_list = self.datastore_client.get_multi(event_keys)
         return events_list
-
-
-    
-
 
     def delete_event(self, event_id):
         '''

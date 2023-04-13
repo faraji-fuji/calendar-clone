@@ -58,7 +58,7 @@
                         {% for calendar in calendars%}
 
                         <li class="">
-                            <a href="#">
+                            <a href="/secondary_calendar/{{ calendar['id']}}">
                                 <p>{{ calendar['name'] }}</p>
                             </a>
                         </li>
@@ -110,7 +110,13 @@
                                         </form>
                                         <a class="dropdown-item" href="#">Share Calendar</a>
                                         <a class="dropdown-item" href="#">Remove User from Calendar</a>
-                                        <a class="dropdown-item" href="#">Delete Calendar</a>
+
+                                        <form action="/delete_calendar" method="post">
+                                            <button type="submit" class="dropdown-item">
+                                                Delete Calendar
+                                            </button>
+                                        </form>
+
 
                                         <button class="dropdown-item" data-toggle="modal" data-target="#create_event">
                                             New Event

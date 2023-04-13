@@ -30,6 +30,7 @@ def root():
     user_data = None
     calendars = None
     personal_events = None
+    events = None
 
     if id_token:
         try:
@@ -40,11 +41,6 @@ def root():
             # get user data
             user_data = my_user.get_user(claims)
 
-            # store user data in session
-            session['user_data'] = user_data
-
-            pprint(session)
-
             if user_data == None:
                 my_user.create_user(claims)
                 user_data = my_user.get_user(claims)
@@ -53,7 +49,6 @@ def root():
             # if claims['name']:
             #     my_user.update_username(claims)
 
-            
             # create a default personal calendar
             if len(user_data['calendar_ids']) < 1:
                 id = my_calendar.create_calendar('personal')
@@ -63,11 +58,16 @@ def root():
             # get calendars
             if len(user_data['calendar_ids']):
                 calendars = my_calendar.get_calendars_from_user(user_data)
+                session['calendars'] = calendars
                 
             # Get personal events from the default personal calendar
             for calendar in calendars:
+                pprint(calendar)
                 if calendar['name'] == 'personal':
-                    personal_events = my_event.get_personal_events(calendar['event_ids'])
+                    events = my_event.get_events(calendar['event_ids'])
+
+            # store user data in session
+            session['user_data'] = user_data
 
         except ValueError as exc:
             error_message = str(exc)
@@ -77,8 +77,7 @@ def root():
         error_message=error_message, 
         user_data=user_data, 
         calendars=calendars,
-        personal_events=personal_events)
-
+        events=events)
 
 
 @app.route('/create_calendar', methods=['POST'])
@@ -94,11 +93,22 @@ def create_calendar():
         # make sure to validate user input
         calendar_name = request.form['calendar_name']
 
-        # create calendar
-        id = my_calendar.create_calendar(calendar_name)
+        calendar_names = my_calendar.get_calendar_names(user_data)
+        check = my_calendar.check_name_exists(calendar_name, calendar_names)
 
-        # add the created calendar to the current user
-        my_calendar.add_calendar_to_user(user_data, id)
+        if not check:
+            # create calendar
+            id = my_calendar.create_calendar(calendar_name)
+
+            # add the created calendar to the current user
+            my_calendar.add_calendar_to_user(user_data, id)
+        else:
+            message = "Failed to create calendar. The name exists. Please use a different name."
+            return render_template(
+                'index.html', 
+                user_data = session['user_data'],
+                message=message,
+                calendars = session['calendars'])
 
     except ValueError as exc:
         error_message = str(exc)
@@ -199,12 +209,14 @@ def update_event_form(event_id):
     calendars = None
 
     try:
-        # get event entity
         event_entity = my_event.get_event_entity(event_id)            
     except ValueError as exc:
         error_message = str(exc)
 
-    return render_template('update_event_form.html', user_data=user_data, event=event_entity)
+    return render_template('update_event_form.html', 
+                           user_data=session['user_data'], 
+                           event=event_entity,
+                           calendars=session['calendars'])
 
 
 @app.route('/update_event/<int:event_id>', methods=['POST'])
@@ -257,13 +269,83 @@ def delete_event(event_id):
         error_message = str(exc)
 
     return redirect('/')
-# start here, delete entity, from event list
 
 
+@app.route('/secondary_calendar/<int:calendar_id>')
+def secondary_calendar(calendar_id):
+    '''
+    Get event IDs of the associated calendar. Get the actual list of events
+    '''
+    user_data = session['user_data']
+    event_ids = my_event.get_event_ids(calendar_id)
+    events_list = my_event.get_events(event_ids)
 
-@app.route('/secondary_calendar')
-def secondary_calendar():
-    pass
+    # get calendars
+    if len(user_data['calendar_ids']):
+        calendars = my_calendar.get_calendars_from_user(user_data)
+        # session['calendars'] = calendars
+    
+    return render_template(
+        'index.html', 
+        user_data=user_data,
+        events=events_list,
+        calendars=calendars)
+
+@app.route('/delete_calendar', methods=['POST'])
+def delete_calendar():
+    '''
+    Show form to delete calendar
+    '''
+
+    user_data = session['user_data']
+
+    # get calendars
+    if len(user_data['calendar_ids']):
+        calendars = my_calendar.get_calendars_from_user(user_data)
+
+    return render_template(
+        "delete_calendar_form.html",
+        user_data = user_data,
+        calendars= calendars)
+
+@app.route('/delete_calendar_confirm', methods=['POST'])
+def delelete_calendar_confirm():
+
+    user_data = session['user_data']
+    calendar_name = request.form['calendar_name']
+
+    if len(user_data['calendar_ids']):
+        calendars = my_calendar.get_calendars_from_user(user_data)
+
+        for calendar in calendars:
+            if calendar['name'] == calendar_name:
+                if len(calendar['event_ids']):
+                    message = f"This calendar has events. Are you sure you want to delete?. Type '{calendar['name']}' to confirm."
+                    return render_template(
+                        'delete_calendar_confirmation_form.html',
+                        user_data = user_data,
+                        calendars = calendars,
+                        message = message)
+                else:
+                    my_calendar.delete_calendar_id(calendar, user_data)
+                    my_calendar.delete_calendar(calendar)
+    return redirect('/')
+
+
+@app.route('/delete_calendar_confirmed', methods=['POST'])
+def delelete_calendar_confirmed():
+    user_data = session['user_data']
+    calendar_name = request.form['calendar_name']
+
+    if len(user_data['calendar_ids']):
+        calendars = my_calendar.get_calendars_from_user(user_data)
+
+        for calendar in calendars:
+            if calendar['name'] == calendar_name:
+                my_calendar.delete_calendar_id(calendar, user_data)
+                my_calendar.delete_calendar(calendar)
+    return redirect('/')
+
 
 @app.route('/share_calendar')
 def share_calendar():
@@ -276,10 +358,6 @@ def shared_calendar():
 @app.route('/remove_user')
 def remove_user():
     pass
-
-
-
-    
 
 
 if __name__ == '__main__':

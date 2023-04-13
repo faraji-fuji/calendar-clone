@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="content">
+    <div class="row">
+        <div class="card p-4 m-4">
+            <div class="card-header">Delete Calendar</div>
+            <div class="card-body">
+                <form action="/delete_calendar_confirm" method="post">
+                    <div class="row">
+                        <div class="col-md-12 ">
+                            <div class="form-group">
+                                <label>Select the calendar you want to delete.</label>
+                                <select class="form-control" name="calendar_name" id="current_name">
+                                    {% for calendar in calendars %}
+                                    {% if calendar['name'] != 'personal' %}
+                                    <option class="form-control" value="{{ calendar['name'] }}">{{
+                                        calendar['name']}} </option>
+                                    {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success">Delete</button>
+                    <a class="btn btn-danger" href="/">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

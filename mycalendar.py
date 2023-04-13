@@ -33,12 +33,14 @@ class MyCalendar:
         :param user_data: A User entity. Where we need to add the ID.
         :param id: The ID of the new calendar.
         '''
-        calendar_keys = user_data['calendar_ids']
-        calendar_keys.append(id)
-        user_data.update({
-            'calendar_ids': calendar_keys
+        calendar_ids = user_data['calendar_ids']
+        calendar_ids.append(id)
+        entity_key = self.datastore_client.key('UserData', user_data['email'])
+        entity = self.datastore_client.get(entity_key)
+        entity.update({
+            'calendar_ids': calendar_ids
         })
-        self.datastore_client.put(user_data)
+        self.datastore_client.put(entity)
 
     def get_calendars_from_user(self, user_data):
         '''
@@ -104,22 +106,11 @@ class MyCalendar:
         self.datastore_client.put(calendar)
 
 
-        # calendar_key = self.datastore_client.key('Calendar', calendar_id)
-        # calendar_entity = self.datastore_client.get(calendar_key)
-
-        # if calendar_entity is not None:
-        #     calendar_entity.update({
-        #         'name': new_name
-        #     })
-        #     self.datastore_client.put(calendar_entity)
-
-
-
     def delete_event_id(self, calendar_entity, event_id):
         '''
         Delete event id from calendar['event_ids'] list.
  
-        :param calendar_ntity: The calendar entity to delete from.
+        :param calendar_entity: The calendar entity to delete from.
         :param event_id: The ID of the event to be removed to the event list
         '''
         event_ids = calendar_entity['event_ids']
@@ -128,5 +119,63 @@ class MyCalendar:
             'event_ids': event_ids
         })
         self.datastore_client.put(calendar_entity)
+
+
+    def delete_calendar(self, calendar):
+        '''
+        Delete a calendar entity.
+        '''
+        self.datastore_client.delete(calendar)
+
+
+    def delete_calendar_id(self, calendar, user_data):
+        '''
+        Delete calendar id from UserData entity.
+
+        :param calendar: The calendar whose ID should be deleted
+        :user_data: User data.
+        '''
+        calendar_ids = user_data['calendar_ids']
+        calendar_id = calendar.id
+        calendar_ids.remove(calendar_id)
+        user_entity_key = self.datastore_client.key('UserData', user_data['email'])
+        user_entity = self.datastore_client.get(user_entity_key)
+        user_entity.update({
+            'calendar_ids': calendar_ids
+        })
+        self.datastore_client.put(user_entity)
+        
+    def check_name_exists(self, calendar_name, calendar_names):
+        '''
+        Check if a calendar name already exists
+
+        :parama:
+        '''
+        if calendar_name in calendar_names:
+            return True
+        return False
+
+    def get_calendar_names(self, user_data):
+        '''
+        Get a list of calendar names.
+
+        :param user_data: User data.
+        :return: A list of existing calendar names.
+        '''
+        calendar_names = []
+        calendar_keys = []
+        calendar_ids = user_data['calendar_ids']
+        
+        for i in range(len(calendar_ids)):
+            calendar_keys.append(self.datastore_client.key(
+                'Calendar', calendar_ids[i]))
+
+        calendar_list = self.datastore_client.get_multi(calendar_keys)
+
+        for calendar in calendar_list:
+            calendar_names.append(calendar['name'])
+
+        return calendar_names
+
 
         

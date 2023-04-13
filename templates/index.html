@@ -1,18 +1,18 @@
 {% extends "layout.html" %}
 
-{% block content%}
+{% block content %}
 <div class="content">
     <div class="row">
 
-        {% if personal_events %}
-        {% for personal_event in personal_events %}
+        {% if events %}
+        {% for event in events %}
 
         <div class="col-lg-3 col-md-6">
             <div class="card card-chart">
                 <div class="card-header">
-                    <h5 class="card-category">Start: {{ personal_event['start_time'] }}</h5>
-                    <h5 class="card-category">End: {{ personal_event['start_time'] }}</h5>
-                    <h4 class="card-title">{{ personal_event['name'] }}</h4>
+                    <h5 class="card-category">Start: {{ event['start_time'] }}</h5>
+                    <h5 class="card-category">End: {{ event['start_time'] }}</h5>
+                    <h4 class="card-title">{{ event['name'] }}</h4>
                     <div class="dropdown">
                         <button type="button"
                             class="btn btn-round btn-outline-default dropdown-toggle btn-simple btn-icon no-caret"
@@ -20,10 +20,10 @@
                             <i class="fa fa-gear"></i>
                         </button>
                         <div class="dropdown-menu dropdown-menu-right">
-                            <form action="/update_event_form/{{ personal_event['id'] }}" method="post">
+                            <form action="/update_event_form/{{ event['id'] }}" method="post">
                                 <button class="dropdown-item " type="submit"> Edit Event</button>
                             </form>
-                            <form action="/delete_event/{{ personal_event['id'] }}" method="post">
+                            <form action="/delete_event/{{ event['id'] }}" method="post">
                                 <button class="dropdown-item text-danger" type="submit"> Delete
                                     Event</button>
                             </form>
@@ -31,7 +31,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    {{ personal_event['notes'] }}
+                    {{ event['notes'] }}
                 </div>
             </div>
         </div>
