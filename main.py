@@ -1,9 +1,10 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, session
 from google.cloud import datastore
 from google.auth.transport import requests
 from pprint import pprint
 import datetime
 import google.oauth2.id_token
+
 
 # import custom classes
 from user import User
@@ -38,6 +39,12 @@ def root():
 
             # get user data
             user_data = my_user.get_user(claims)
+
+            # store user data in session
+            session['user_data'] = user_data
+
+            pprint(session)
+
             if user_data == None:
                 my_user.create_user(claims)
                 user_data = my_user.get_user(claims)
@@ -76,32 +83,25 @@ def root():
 
 @app.route('/create_calendar', methods=['POST'])
 def create_calendar():
-    id_token = request.cookies.get("token")
     error_message = None
-    claims = None
     user_data = None
 
-    if id_token:
-        try:
-            # verify id token
-            claims = google.oauth2.id_token.verify_firebase_token(
-                id_token, firebase_request_adapter)
+    try:
+        # get user data
+        user_data = session['user_data']
+    
+        # get calendar name from form
+        # make sure to validate user input
+        calendar_name = request.form['calendar_name']
 
-            # get user data
-            user_data = my_user.get_user(claims)
-        
-            # get calendar name from form
-            # make sure to validate user input
-            calendar_name = request.form['calendar_name']
+        # create calendar
+        id = my_calendar.create_calendar(calendar_name)
 
-            # create calendar
-            id = my_calendar.create_calendar(calendar_name)
+        # add the created calendar to the current user
+        my_calendar.add_calendar_to_user(user_data, id)
 
-            # add the created calendar to the current user
-            my_calendar.add_calendar_to_user(user_data, id)
-
-        except ValueError as exc:
-            error_message = str(exc)
+    except ValueError as exc:
+        error_message = str(exc)
 
     return redirect('/')
 
@@ -109,18 +109,12 @@ def create_calendar():
 def update_calendar_form():
     id_token = request.cookies.get("token")
     error_message = None
-    claims = None
     user_data = None
-    calendars = None
 
     if id_token:
         try:
-            # verify id token
-            claims = google.oauth2.id_token.verify_firebase_token(
-                id_token, firebase_request_adapter)
-            
             # get user data
-            user_data = my_user.get_user(claims)
+            user_data = session['user_data']
 
             # fetch calendars
             calendar_list = my_calendar.get_calendars_from_user(user_data)
@@ -138,12 +132,8 @@ def update_calendar():
     
     if id_token:
         try:
-            # verify id token
-            claims = google.oauth2.id_token.verify_firebase_token(
-                id_token, firebase_request_adapter)
-
             # get user data
-            user_data = my_user.get_user(claims)
+            user_data = session['user_data']
 
             # get form data
             # validate form data
@@ -174,12 +164,8 @@ def create_event():
 
     if id_token:
         try:
-            # verify id token
-            claims = google.oauth2.id_token.verify_firebase_token(
-                id_token, firebase_request_adapter)
-
             # get user data
-            user_data = my_user.get_user(claims)
+            user_data = session['user_data']
 
             # get event details from the form
             # make sure to validate user input
@@ -208,93 +194,74 @@ def create_event():
 
 @app.route('/update_event_form/<int:event_id>', methods=['POST'])
 def update_event_form(event_id):
-    id_token = request.cookies.get("token")
     error_message = None
-    claims = None
     user_data = None
     calendars = None
 
-    if id_token:
-        try:
-            # verify id token
-            claims = google.oauth2.id_token.verify_firebase_token(
-                id_token, firebase_request_adapter)
-
-            # get event entity
-            event_entity = my_event.get_event_entity(event_id)            
-        except ValueError as exc:
-            error_message = str(exc)
+    try:
+        # get event entity
+        event_entity = my_event.get_event_entity(event_id)            
+    except ValueError as exc:
+        error_message = str(exc)
 
     return render_template('update_event_form.html', user_data=user_data, event=event_entity)
 
 
 @app.route('/update_event/<int:event_id>', methods=['POST'])
 def update_event(event_id):
-    id_token = request.cookies.get("token")
+    error_message = None
+
+    try:
+        # get form data
+        # validate form data
+        name = request.form['event_name']
+        start_time = request.form['start_time']
+        end_time = request.form['end_time']
+        notes = request.form['event_notes']
+
+        # update event entity 
+        my_event.update_event_entity(event_id, name, start_time, end_time, notes)
     
-    if id_token:
-        try:
-            # verify id token
-            claims = google.oauth2.id_token.verify_firebase_token(
-                id_token, firebase_request_adapter)
-
-            # get form data
-            # validate form data
-            name = request.form['event_name']
-            start_time = request.form['start_time']
-            end_time = request.form['end_time']
-            notes = request.form['event_notes']
-
-            # update event entity 
-            my_event.update_event_entity(event_id, name, start_time, end_time, notes)
-
-        except ValueError as exc:
-            error_message = str(exc)
-
+    except ValueError as exc:
+        error_message = str(exc)
+    
     return redirect('/')
 
 
 
 @app.route('/delete_event/<int:event_id>', methods=['POST'])
 def delete_event(event_id):
-    id_token = request.cookies.get("token")
     error_message = None
-    claims = None
     user_data = None
     calendars = None
 
-    if id_token:
-        try:
-            # verify id token
-            claims = google.oauth2.id_token.verify_firebase_token(
-                id_token, firebase_request_adapter)
+    try:
+        # get user data
+        user_data = session['user_data']
 
-            # get user data
-            user_data = my_user.get_user(claims)
+        # get all calendars
+        calendars = my_calendar.get_calendars_from_user(user_data)
 
-            # get all calendars
-            calendars = my_calendar.get_calendars_from_user(user_data)
+        # get personal calendar
+        for calendar in calendars:
+            if calendar['name'] == 'personal':
+                calendar_entity = calendar
+        
+        # delete event entity
+        my_event.delete_event(event_id)
 
-            # get personal calendar
-            for calendar in calendars:
-                if calendar['name'] == 'personal':
-                    calendar_entity = calendar
-            
-            # delete event entity
-            my_event.delete_event(event_id)
+        # delete event id from calendar event_ids
+        my_calendar.delete_event_id(calendar_entity, event_id)
 
-            # delete event id from calendar event_ids
-            my_calendar.delete_event_id(calendar_entity, event_id)
-
-        except ValueError as exc:
-            error_message = str(exc)
+    except ValueError as exc:
+        error_message = str(exc)
 
     return redirect('/')
 # start here, delete entity, from event list
 
 
 
-@app.route('secondary_calendar')
+@app.route('/secondary_calendar')
 def secondary_calendar():
     pass
 
@@ -302,7 +269,7 @@ def secondary_calendar():
 def share_calendar():
     pass
 
-@app.route('shared_calendar')
+@app.route('/shared_calendar')
 def shared_calendar():
     pass
 
@@ -316,4 +283,6 @@ def remove_user():
 
 
 if __name__ == '__main__':
+    app.secret_key = 'super secret key'
+    app.config['SESSION_TYPE'] = 'filesystem'
     app.run(host='127.0.0.1', port=8080, debug=True)

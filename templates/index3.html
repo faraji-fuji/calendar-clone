@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <title>
+    Calendar
+  </title>
+  <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no'
+    name='viewport' />
+  <!--     Fonts and icons     -->
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700,200" rel="stylesheet" />
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css"
+    integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <!-- CSS Files -->
+  <link href="{{ url_for('static', filename='bootstrap.min.css') }}" rel="stylesheet" />
+  <link href="{{ url_for('static', filename='now-ui-dashboard.css') }}" rel="stylesheet" />
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+  <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+
+  <script src="https://www.gstatic.com/firebasejs/ui/4.4.0/firebase-ui-auth.js"></script>
+  <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/4.4.0/firebase-ui-auth.css" />
+
+</head>
+
+<body class="">
+  <div id="firebase-auth-container"></div>
+  <!-- <button id="sign-out" hidden="true">Sign out</button> -->
+
+  <div id="login-info" hidden="true">
+
+
+    <!-- {% if error_message %}
+    <p>Error Message: {{ error_message }}</p>
+    {% endif %} -->
+  </div>
+
+
+
+  <div id="main-content" hidden="true">
+    <div class="wrapper  bg-primary">
+      <div class="sidebar bg-primary" data-color="">
+
+        <div class="logo">
+          <h6 class="simple-text logo-normal">Calendars</h6>
+        </div>
+
+        <div class="sidebar-wrapper" id="sidebar-wrapper">
+          <ul class="nav">
+
+            {% if calendars %}
+            {% for calendar in calendars%}
+
+            <li class="">
+              <a href="#">
+                <p>{{ calendar['name'] }}</p>
+              </a>
+            </li>
+
+            {% endfor %}
+            {% endif %}
+
+          </ul>
+        </div>
+      </div>
+      <div class="main-panel" id="main-panel">
+        <!-- navigation bar -->
+        <nav class="navbar navbar-expand-lg navbar-dark  bg-secondary  mb-5">
+          <div class="container-fluid">
+            <div class="navbar-wrapper">
+              <div class="navbar-toggle">
+                <button type="button" class="navbar-toggler">
+                  <span class="navbar-toggler-bar bar1"></span>
+                  <span class="navbar-toggler-bar bar2"></span>
+                  <span class="navbar-toggler-bar bar3"></span>
+                </button>
+              </div>
+              <a class="navbar-brand" href="#">{{ user_data['email'] }}</a>
+            </div>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navigation"
+              aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-bar navbar-kebab"></span>
+              <span class="navbar-toggler-bar navbar-kebab"></span>
+              <span class="navbar-toggler-bar navbar-kebab"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navigation">
+              <ul class="navbar-nav">
+                <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink" data-toggle="dropdown"
+                    aria-haspopup="true" aria-expanded="false">
+                    <p>
+                      <span class="d-md-block">Calendar Options</span>
+                    </p>
+                  </a>
+                  <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
+
+                    <button class="dropdown-item" data-toggle="modal" data-target="#create_calendar">
+                      New Calendar
+                    </button>
+                    <form action="/update_calendar_form" method="post">
+                      <button type="submit" class="dropdown-item">Edit Calendar</button>
+                    </form>
+                    <a class="dropdown-item" href="#">Share Calendar</a>
+                    <a class="dropdown-item" href="#">Remove User from Calendar</a>
+                    <a class="dropdown-item" href="#">Delete Calendar</a>
+
+                    <button class="dropdown-item" data-toggle="modal" data-target="#create_event">
+                      New Event
+                    </button>
+
+                  </div>
+                </li>
+                <li class="nav-item">
+                  <button class="btn btn-sm" id="sign-out" hidden="true">Sign out</button>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+
+        <div class="content">
+          <div class="row">
+
+            {% if personal_events %}
+            {% for personal_event in personal_events %}
+
+            <div class="col-lg-3 col-md-6">
+              <div class="card card-chart">
+                <div class="card-header">
+                  <h5 class="card-category">Start: {{ personal_event['start_time'] }}</h5>
+                  <h5 class="card-category">End: {{ personal_event['start_time'] }}</h5>
+                  <h4 class="card-title">{{ personal_event['name'] }}</h4>
+                  <div class="dropdown">
+                    <button type="button"
+                      class="btn btn-round btn-outline-default dropdown-toggle btn-simple btn-icon no-caret"
+                      data-toggle="dropdown">
+                      <i class="fa fa-gear"></i>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right">
+
+                      <form action="/update_event_form/{{ personal_event['id'] }}" method="post">
+                        <button class="dropdown-item " type="submit"> Edit Event</button>
+                      </form>
+
+                      <form action="/delete_event/{{ personal_event['id'] }}" method="post">
+                        <button class="dropdown-item text-danger" type="submit"> Delete Event</button>
+                      </form>
+
+                    </div>
+                  </div>
+                </div>
+                <div class="card-body">
+                  {{ personal_event['notes'] }}
+                </div>
+              </div>
+            </div>
+
+
+
+
+            {% endfor %}
+            {% endif %}
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+
+
+
+    <!-- Create Calendar Modal -->
+    <div class="modal fade" id="create_calendar" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+      aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header justify-content-center">
+            <h5 class="title title-up ">Create Calendar</h5>
+          </div>
+          <div class="modal-body">
+            <form action="/create_calendar" method="post">
+              <div class="row">
+                <div class="col-md-12 ">
+                  <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" name="calendar_name" class="form-control" placeholder="Name of your calendar">
+                  </div>
+                </div>
+              </div>
+              <button type="submit" name="submit" class="btn btn-success">Create Calendar</button>
+              <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--  End Modal -->
+
+
+    <!-- Create Event Modal -->
+    <div class="modal fade" id="create_event" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+      aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header justify-content-center">
+            <h5 class="title title-up">Create Event</h5>
+          </div>
+          <div class="modal-body">
+            <form action="/create_event" method="post">
+              <div class="row">
+                <div class="col-md-12 ">
+                  <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" name="event_name" class="form-control" placeholder="Name of your event" required>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6 pr-1">
+                  <div class="form-group">
+                    <label>Start Time</label>
+                    <input name="start_time" type="datetime-local" class="form-control">
+                  </div>
+                </div>
+                <div class="col-md-6 pl-1">
+                  <div class="form-group">
+                    <label>End Time</label>
+                    <input name="end_time" type="datetime-local" class="form-control">
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label>Notes</label>
+                    <textarea name='event_notes' rows="4" cols="80" class="form-control"
+                      placeholder="A brief description of your event"></textarea>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label>Select calendar to add event to</label>
+                    <select name="calendar_name" id="calendar_name" class="form-control">
+
+                      {% if calendars %}
+                      {% for calendar in calendars %}
+
+                      <option class="form-control" value="{{ calendar['name'] }}"> {{ calendar['name'] }} </option>
+
+                      {% endfor %}
+                      {% endif %}
+
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-success">Add Event</button>
+              <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--  End Modal -->
+
+
+    <!-- Update Event Modal -->
+    <div class="modal fade" id="update_event" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+      aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header justify-content-center">
+            <h5 class="title title-up">Update Event</h5>
+          </div>
+          <div class="modal-body">
+            <form action="/create_event" method="post">
+              <div class="row">
+                <div class="col-md-12 ">
+                  <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" name="event_name" class="form-control" placeholder="Name of your event" required>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6 pr-1">
+                  <div class="form-group">
+                    <label>Start Time</label>
+                    <input name="start_time" type="datetime-local" class="form-control">
+                  </div>
+                </div>
+                <div class="col-md-6 pl-1">
+                  <div class="form-group">
+                    <label>End Time</label>
+                    <input name="end_time" type="datetime-local" class="form-control">
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label>Notes</label>
+                    <textarea name='event_notes' rows="4" cols="80" class="form-control"
+                      placeholder="A brief description of your event"></textarea>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label>Select calendar to add event to</label>
+                    <select name="calendar_name" id="calendar_name" class="form-control">
+
+                      {% if calendars %}
+                      {% for calendar in calendars %}
+
+                      <option class="form-control" value="{{ calendar['name'] }}"> {{ calendar['name'] }} </option>
+
+                      {% endfor %}
+                      {% endif %}
+
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-success">Add Event</button>
+              <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--  End Modal -->
+  </div>
+
+
+  <!-- Firebase scripts -->
+  <script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.8.0/firebase-auth.js"></script>
+  <script type="module" src="{{ url_for('static', filename='app-setup.js') }}"></script>
+
+  <!--   Core JS Files   -->
+  <script src="{{ url_for('static', filename='core/jquery.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='core/popper.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='core/bootstrap.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='plugins/perfect-scrollbar.jquery.min.js') }}"></script>
+  <!-- Chart JS -->
+  <script src="{{ url_for('static', filename='plugins/chartjs.min.js') }}"></script>
+  <!--  Notifications Plugin    -->
+  <script src="{{ url_for('static', filename='plugins/bootstrap-notify.js') }}"></script>
+  <!-- Control Center for Now Ui Dashboard: parallax effects, scripts for the example pages etc -->
+  <script src="{{ url_for('static', filename='now-ui-dashboard.min.js') }}" type="text/javascript"></script>
+</body>
+
+</html>
