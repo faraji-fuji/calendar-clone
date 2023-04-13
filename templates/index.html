@@ -99,15 +99,21 @@
                     </p>
                   </a>
                   <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
-                    <a class="dropdown-item" href="#">Share Calendar</a>
-                    <a class="dropdown-item" href="#">Delete Calendar</a>
-                    <a class="dropdown-item" href="#">Remove User from Calendar</a>
+
                     <button class="dropdown-item" data-toggle="modal" data-target="#create_calendar">
                       New Calendar
                     </button>
+                    <form action="/update_calendar_form" method="post">
+                      <button type="submit" class="dropdown-item">Edit Calendar</button>
+                    </form>
+                    <a class="dropdown-item" href="#">Share Calendar</a>
+                    <a class="dropdown-item" href="#">Remove User from Calendar</a>
+                    <a class="dropdown-item" href="#">Delete Calendar</a>
+
                     <button class="dropdown-item" data-toggle="modal" data-target="#create_event">
                       New Event
                     </button>
+
                   </div>
                 </li>
                 <li class="nav-item">

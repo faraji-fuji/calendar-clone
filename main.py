@@ -107,12 +107,63 @@ def create_calendar():
 
 @app.route('/update_calendar_form', methods=['POST'])
 def update_calendar_form():
-    pass
+    id_token = request.cookies.get("token")
+    error_message = None
+    claims = None
+    user_data = None
+    calendars = None
+
+    if id_token:
+        try:
+            # verify id token
+            claims = google.oauth2.id_token.verify_firebase_token(
+                id_token, firebase_request_adapter)
+            
+            # get user data
+            user_data = my_user.get_user(claims)
+
+            # fetch calendars
+            calendar_list = my_calendar.get_calendars_from_user(user_data)
+            pprint(calendar_list)
+
+        except ValueError as exc:
+            error_message = str(exc)
+
+    return render_template('update_calendar_form.html', user_data=user_data, calendars=calendar_list)
 
 @app.route('/update_calendar', methods=['POST'])
+def update_calendar():
+    id_token = request.cookies.get("token")
+    error_message = None
+    
+    if id_token:
+        try:
+            # verify id token
+            claims = google.oauth2.id_token.verify_firebase_token(
+                id_token, firebase_request_adapter)
+
+            # get user data
+            user_data = my_user.get_user(claims)
+
+            # get form data
+            # validate form data
+            current_name = request.form['current_name']
+            new_calendar_name = request.form['new_calendar_name']
+
+            # fetch calendars
+            calendar_list = my_calendar.get_calendars_from_user(user_data)
+    
+            # update calendar entity
+            for calendar in calendar_list:
+                if calendar['name'] == current_name:
+                    my_calendar.update_calendar_name(calendar, new_calendar_name)
+                    
+        except ValueError as exc:
+            error_message = str(exc)
+
+    return redirect('/')
 
 
-# start here. create event route
 @app.route('/create_event', methods=['POST'])
 def create_event():
     id_token = request.cookies.get("token")
@@ -240,6 +291,28 @@ def delete_event(event_id):
 
     return redirect('/')
 # start here, delete entity, from event list
+
+
+
+@app.route('secondary_calendar')
+def secondary_calendar():
+    pass
+
+@app.route('/share_calendar')
+def share_calendar():
+    pass
+
+@app.route('shared_calendar')
+def shared_calendar():
+    pass
+
+@app.route('/remove_user')
+def remove_user():
+    pass
+
+
+
+    
 
 
 if __name__ == '__main__':

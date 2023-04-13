@@ -1,6 +1,5 @@
 from google.cloud import datastore
 from google.auth.transport import requests
-import google.oauth2.id_token
 import random
 from pprint import pprint
 
@@ -34,7 +33,6 @@ class MyCalendar:
         :param user_data: A User entity. Where we need to add the ID.
         :param id: The ID of the new calendar.
         '''
-
         calendar_keys = user_data['calendar_ids']
         calendar_keys.append(id)
         user_data.update({
@@ -92,6 +90,31 @@ class MyCalendar:
         })
         self.datastore_client.put(calendar)
 
+
+    def update_calendar_name(self, calendar, new_name):
+        '''
+        Update the name of a calendar
+
+        :param calendar: The calendar entity to update.
+        :param new_name: New name of the calendar.
+        '''
+        calendar.update({
+            'name': new_name
+        })
+        self.datastore_client.put(calendar)
+
+
+        # calendar_key = self.datastore_client.key('Calendar', calendar_id)
+        # calendar_entity = self.datastore_client.get(calendar_key)
+
+        # if calendar_entity is not None:
+        #     calendar_entity.update({
+        #         'name': new_name
+        #     })
+        #     self.datastore_client.put(calendar_entity)
+
+
+
     def delete_event_id(self, calendar_entity, event_id):
         '''
         Delete event id from calendar['event_ids'] list.
@@ -105,3 +128,5 @@ class MyCalendar:
             'event_ids': event_ids
         })
         self.datastore_client.put(calendar_entity)
+
+        
