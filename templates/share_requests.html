@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="content">
+    <h4>Share Requests</h4>
+    <div class="row">
+
+        {% if share_requests %}
+        {% for share_request in share_requests %}
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card card-chart">
+                <div class="card-header">
+                    <h4 class="card-title"></h4>
+                    <div class="dropdown">
+                        <button type="button"
+                            class="btn btn-round btn-outline-default dropdown-toggle btn-simple btn-icon no-caret"
+                            data-toggle="dropdown">
+                            <i class="fa fa-gear"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <!-- <form action="/" method="post">
+                                <button class="dropdown-item " type="submit"> Approve</button>
+                            </form>
+
+                            <form action="/" method="post">
+                                <button class="dropdown-item text-danger" type="submit"> Delete
+                                    Request</button>
+                            </form> -->
+
+                            <button class="dropdown-item "> Approve</button>
+                            <button class="dropdown-item text-danger"> Delete Request</button>
+
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {{ share_request['name'] }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% endfor %}
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

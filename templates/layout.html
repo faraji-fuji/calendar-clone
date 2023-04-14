@@ -44,11 +44,11 @@
 
 
     <div id="main-content" hidden="true">
-        <div class="wrapper  bg-primary">
-            <div class="sidebar bg-primary" data-color="">
+        <div class="wrapper">
+            <div class="sidebar bg-primary" data-color="blue">
 
                 <div class="logo">
-                    <h6 class="simple-text logo-normal">Calendars</h6>
+                    <h5 class="simple-text logo-normal">Calendars</h5>
                 </div>
 
                 <div class="sidebar-wrapper" id="sidebar-wrapper">
@@ -59,19 +59,30 @@
 
                         <li class="">
                             <a href="/secondary_calendar/{{ calendar['id']}}">
-                                <p>{{ calendar['name'] }}</p>
+                                <h6>{{ calendar['name'] }}</h6>
                             </a>
                         </li>
 
                         {% endfor %}
                         {% endif %}
 
+                        <li class="">
+                            <a href="/get_share_requests">
+                                <h6>Share Requests</h6>
+                            </a>
+                        </li>
+
+                        <li class="">
+                            <a href="/get_shared_calendars">
+                                <h6>Shared Calendars</h6>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>
             <div class="main-panel" id="main-panel">
                 <!-- navigation bar -->
-                <nav class="navbar navbar-expand-lg navbar-dark  bg-secondary  mb-5">
+                <nav class="navbar navbar-expand-lg navbar-dark  bg-secondary mb-5">
                     <div class="container-fluid">
                         <div class="navbar-wrapper">
                             <div class="navbar-toggle">
@@ -108,7 +119,14 @@
                                         <form action="/update_calendar_form" method="post">
                                             <button type="submit" class="dropdown-item">Edit Calendar</button>
                                         </form>
-                                        <a class="dropdown-item" href="#">Share Calendar</a>
+
+                                        <form action="/share_calendar_form" method="post">
+                                            <button type="submit" class="dropdown-item">
+                                                Share Calendar
+                                            </button>
+                                        </form>
+
+
                                         <a class="dropdown-item" href="#">Remove User from Calendar</a>
 
                                         <form action="/delete_calendar" method="post">
@@ -125,12 +143,83 @@
                                     </div>
                                 </li>
                                 <li class="nav-item">
-                                    <button class="btn btn-sm" id="sign-out" hidden="true">Sign out</button>
+                                    <a class="btn btn-sm" id="sign-out" hidden="true" href="/logout">Sign out</a>
                                 </li>
                             </ul>
                         </div>
                     </div>
                 </nav>
+
+
+                <!-- Notifications -->
+                {% if alert %}
+                <div class="section section-notifications mb-5">
+                    {% if alert['success']%}
+                    <div class="alert alert-success" role="alert">
+                        <div class="container">
+                            <div class="alert-icon">
+                                <i class="fa fa-check"></i>
+                            </div>
+                            <strong>Success! </strong> {{ alert['success'] }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">
+                                    <i class="fa fa-window-close"></i>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                    {% endif%}
+
+                    {% if alert['info']%}
+                    <div class="alert alert-info" role="alert">
+                        <div class="container">
+                            <div class="alert-icon">
+                                <i class="fa fa-info"></i>
+                            </div>
+                            <strong>Heads up! </strong> {{ alert['info'] }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">
+                                    <i class="fa fa-window-close"></i>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                    {% endif%}
+
+                    {% if alert['warning']%}
+                    <div class="alert alert-warning" role="alert">
+                        <div class="container">
+                            <div class="alert-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <strong>Warning!</strong> {{ alert['warning'] }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">
+                                    <i class="fa fa-window-close"></i>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if alert['danger'] %}
+                    <div class="alert alert-danger" role="alert">
+                        <div class="container">
+                            <div class="alert-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <strong>Oh snap!</strong> {{ alert['danger'] }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">
+                                    <i class="fa fa-window-close"></i>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+                <!-- End Notifications -->
 
                 <!-- content -->
                 {% block content %}

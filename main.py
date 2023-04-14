@@ -1,15 +1,15 @@
-from flask import Flask, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect, session, url_for
 from google.cloud import datastore
 from google.auth.transport import requests
 from pprint import pprint
 import datetime
 import google.oauth2.id_token
 
-
 # import custom classes
 from user import User
 from mycalendar import MyCalendar
 from event import Event
+from myutilities import MyUtils
 
 # instantiate objects
 app = Flask(__name__)
@@ -20,6 +20,7 @@ firebase_request_adapter = requests.Request()
 my_user = User()
 my_calendar = MyCalendar()
 my_event = Event()
+my_utilities = MyUtils()
 
 
 @app.route('/')
@@ -65,6 +66,7 @@ def root():
                 pprint(calendar)
                 if calendar['name'] == 'personal':
                     events = my_event.get_events(calendar['event_ids'])
+                    session['events'] = events
 
             # store user data in session
             session['user_data'] = user_data
@@ -84,6 +86,7 @@ def root():
 def create_calendar():
     error_message = None
     user_data = None
+    alert = {}
 
     try:
         # get user data
@@ -103,12 +106,13 @@ def create_calendar():
             # add the created calendar to the current user
             my_calendar.add_calendar_to_user(user_data, id)
         else:
-            message = "Failed to create calendar. The name exists. Please use a different name."
+            alert['danger'] = "Failed to create calendar. The name exists. Please use a different name."
             return render_template(
                 'index.html', 
                 user_data = session['user_data'],
-                message=message,
-                calendars = session['calendars'])
+                alert=alert,
+                calendars = session['calendars'],
+                events = session['events'])
 
     except ValueError as exc:
         error_message = str(exc)
@@ -279,6 +283,7 @@ def secondary_calendar(calendar_id):
     user_data = session['user_data']
     event_ids = my_event.get_event_ids(calendar_id)
     events_list = my_event.get_events(event_ids)
+    # session['events'] = events_list
 
     # get calendars
     if len(user_data['calendar_ids']):
@@ -347,18 +352,84 @@ def delelete_calendar_confirmed():
     return redirect('/')
 
 
-@app.route('/share_calendar')
-def share_calendar():
-    pass
+@app.route('/share_calendar_form', methods=['POST'])
+def share_calendar_form():
+    '''
+    Render share calendar form.
+    '''
+    return render_template(
+        'share_calendar_form.html',
+        calendars = session['calendars'],
+        user_data = session['user_data'])
 
-@app.route('/shared_calendar')
-def shared_calendar():
-    pass
+@app.route('/share_calendar', methods=['POST'])
+def share_calendar():
+    '''
+    Send calendar share requests.
+    '''
+    alert = {}
+
+    # get calendar id
+    calendar_name = request.form['calendar_name']
+    user_data = session['user_data']
+    calendars = my_calendar.get_calendars_from_user(user_data)
+    for calendar in calendars:
+        if calendar['name'] == calendar_name:
+            calendar_id = calendar.id
+
+    email_addresses = request.form['email_addresses']
+    email_address_list = my_utilities.email_list(email_addresses)
+    for email_address in email_address_list:
+        foreign_user_data = my_user.get_user_entity(email_address)
+        if foreign_user_data:
+            my_calendar.calendar_share_request(foreign_user_data, calendar_id)
+
+    alert['success'] = '''You request has been sent succefuly. Note, requests
+    are only sent to emails addresses that use this application.'''
+    return render_template(
+        'index.html',
+        calendars = session['calendars'],
+        user_data = session['user_data'],
+        alert = alert)
+
+
+@app.route('/get_share_requests', methods=['GET'])
+def get_share_requests():
+    '''
+    Get share requests.
+    '''
+    user_data = session['user_data']
+    share_request_ids = my_user.get_share_requests(user_data)
+
+    share_requests = []
+    share_request_keys = []
+
+    for i in range(len(share_request_ids)):
+        share_request_keys.append(datastore_client.key(
+                'Calendar', share_request_ids[i]))
+        
+    share_requests = datastore_client.get_multi(share_request_keys)
+
+    return render_template(
+        'share_requests.html',
+        user_data = session['user_data'],
+        calendars = session['calendars'],
+        share_requests = share_requests)
+    
+
+@app.route('/get_shared_calendars', methods = ['GET'])
+def get_shared_calendar():
+    return redirect('/')
 
 @app.route('/remove_user')
 def remove_user():
     pass
 
+
+@app.route('/logout', methods=['GET'])
+def logout():
+    session.clear()
+    return redirect('/')
 
 if __name__ == '__main__':
     app.secret_key = 'super secret key'

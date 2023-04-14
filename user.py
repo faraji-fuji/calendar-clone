@@ -22,15 +22,15 @@ class User:
             'email': claims['email'],
             # 'name': claims['name'],
             'calendar_ids': [],
+            'share_requests': [],
             'shared_calendar_ids': []
         })
         self.datastore_client.put(entity)
 
-
     def update_username(self, claims):
             '''
             Workaround to update username. Firebase seems not to return the 
-            name on first verificatio. We'll need to update manually. 
+            name on first verification. We'll need to update manually. 
 
             :param claims: An object returned after firebase token verification
             '''
@@ -51,3 +51,28 @@ class User:
         entity_key = self.datastore_client.key('UserData', claims['email'])
         entity = self.datastore_client.get(entity_key)
         return entity
+
+
+    def get_user_entity(self, email):
+        '''
+        Get a user entity with the corresponding email address
+
+        :param email: Email address of the user.
+        :return: A user entity containing user data of the associated email.
+        '''
+        entity_key = self.datastore_client.key('UserData', email)
+        entity = self.datastore_client.get(entity_key)
+        return entity
+
+    def get_share_requests(self, user_data):
+        '''
+        Get share requests from other users.
+
+        :param user_data: User data.
+        :return: Share requests.
+        '''
+        share_requests = []
+        user_entity_key = self.datastore_client.key('UserData', user_data['email'])
+        user_entity = self.datastore_client.get(user_entity_key)
+        share_requests = user_entity['share_requests']
+        return share_requests

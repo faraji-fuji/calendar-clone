@@ -42,6 +42,29 @@ class MyCalendar:
         })
         self.datastore_client.put(entity)
 
+    def calendar_share_request(self, user_data, id):
+        '''
+        Add the ID of a calendar entity to a list containing calendar IDs that
+        users have requested to share. The List is a property of User.
+
+        :param user_data: A User entity. Where we need to add the ID.
+        :param id: The ID of the calendar to be shared.
+        '''
+        share_requests = user_data['share_requests']
+
+        pprint(id)
+        pprint(share_requests)
+
+        share_requests.append(id)
+        pprint(share_requests)
+
+        entity_key = self.datastore_client.key('UserData', user_data['email'])
+        entity = self.datastore_client.get(entity_key)
+        entity.update({
+            'share_requests': share_requests
+        })
+        self.datastore_client.put(entity)
+
     def get_calendars_from_user(self, user_data):
         '''
         Get a list of  calendars of the current user. 
@@ -57,6 +80,7 @@ class MyCalendar:
 
         calendar_list = self.datastore_client.get_multi(calendar_keys)
         return calendar_list
+    
 
     def get_calendar_entity():
         pass
@@ -176,6 +200,20 @@ class MyCalendar:
             calendar_names.append(calendar['name'])
 
         return calendar_names
+    
+    def get_calendar(self, calendar_id):
+        '''
+        Get calendar from datastore.
+
+        :param calendar_id: The calendar id to get.
+        :return: calendar entity. 
+        '''
+        calendar_entity_key = self.datastore_client.key('Calendar', calendar_id)
+        calendar_entity = self.datastore_client.get(calendar_entity_key)
+        return calendar_entity
+
+    
+        
 
 
         
