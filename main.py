@@ -421,6 +421,12 @@ def get_share_requests():
 def get_shared_calendar():
     return redirect('/')
 
+
+@app.route('/secondary_calendar', methods=['POST', 'GET'])
+def secondary_calendar():
+    return redirect('/')
+
+
 @app.route('/remove_user')
 def remove_user():
     pass
